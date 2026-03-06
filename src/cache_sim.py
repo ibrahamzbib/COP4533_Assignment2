@@ -1,5 +1,5 @@
 import sys
-from collections import deque
+from collections import deque, OrderedDict
 
 def main():
     if len(sys.argv) < 2:
@@ -13,7 +13,7 @@ def main():
     assert len(requests) == m
 
     print(f"FIFO  : {simulate_fifo(requests,k)}")
-    print(f"LRU   : 0")
+    print(f"LRU   : {simulate_lru(requests, k)}")
     print(f"OPTFF : 0")
 
 def simulate_fifo(requests,k):
@@ -33,6 +33,20 @@ def simulate_fifo(requests,k):
 
     return misses
 
+def simulate_lru(requests, k):
+    cache = OrderedDict()
+    misses = 0
+
+    for r in requests:
+        if r in cache:
+            cache.move_to_end(r)
+            continue
+        misses += 1
+        if len(cache) == k:
+            cache.popitem(last=False)
+        cache[r] = True
+
+    return misses
 
 if __name__ == "__main__":
     main()
