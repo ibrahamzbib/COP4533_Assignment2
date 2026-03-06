@@ -1,5 +1,6 @@
 import sys
-from collections import deque, OrderedDict
+from collections import deque, OrderedDict, defaultdict
+import bisect
 
 def main():
     if len(sys.argv) < 2:
@@ -14,7 +15,7 @@ def main():
 
     print(f"FIFO  : {simulate_fifo(requests,k)}")
     print(f"LRU   : {simulate_lru(requests, k)}")
-    print(f"OPTFF : 0")
+    print(f"OPTFF : {simulate_optff(requests,k)}")
 
 def simulate_fifo(requests,k):
     cache = set()
@@ -45,6 +46,27 @@ def simulate_lru(requests, k):
         if len(cache) == k:
             cache.popitem(last=False)
         cache[r] = True
+
+    return misses
+
+
+def simulate_optff(requests, k):
+    cache = set()
+    misses = 0
+
+    for i, r in enumerate(requests):
+        if r in cache:
+            continue
+        misses += 1
+        if len(cache) == k:
+            def next_use(item):
+                for j in range(i + 1, len(requests)):
+                    if requests[j] == item:
+                        return j
+                return float('inf')
+            evict = max(cache, key=next_use)
+            cache.remove(evict)
+        cache.add(r)
 
     return misses
 
